@@ -52,12 +52,23 @@ try {
     process.exit(1);
 }
 
+// Production setup
 if(process.env.NODE_ENV === "production") {
-    app.use(express.static(path.join(__dirname, "../frontend/dist")));
-    
-    app.get("/*", (req, res) => {
-        res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
-    });
+    console.log("Setting up production static files...");
+    try {
+        app.use(express.static(path.join(__dirname, "../frontend/dist")));
+        console.log("✅ Static files configured");
+        
+        // Use a more specific pattern for SPA routing
+        app.get(/^(?!\/api).*/, (req, res) => {
+            res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+        });
+        console.log("✅ SPA routing configured");
+    } catch (error) {
+        console.error("❌ Error setting up production routes:", error.message);
+    }
+} else {
+    console.log("Running in development mode");
 }
 
 app.listen(PORT, async () => {
